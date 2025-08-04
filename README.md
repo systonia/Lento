@@ -1,4 +1,4 @@
-[![Latest Version](https://img.shields.io/packagist/v/lento/api.svg)](https://packagist.org/packages/lento/api)
+[![Latest Version](https://img.shields.io/packagist/v/systonia/lento.svg)](https://packagist.org/packages/systonia/lento)
 ![Build](https://github.com/LentoLeisenfeld/LentoApi/actions/workflows/build.yaml/badge.svg)
 [![PSR-3 Compatible](https://img.shields.io/badge/PSR--3-compatible-brightgreen.svg)](https://www.php-fig.org/psr/psr-3/)
 [![PSR-4 Compatible](https://github.com/LentoLeisenfeld/LentoApi/actions/workflows/psr-4.yaml/badge.svg)](https://www.php-fig.org/psr/psr-4/)
