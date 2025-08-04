@@ -4,11 +4,10 @@
   "keywords": [
     "php",
     "api",
+    "mvc",
     "framework",
-    "microframework",
     "psr-3",
-    "psr-4",
-    "eloquent"
+    "psr-4"
   ],
   "type": "library",
   "license": "MIT",
@@ -28,7 +27,8 @@
   },
   "require-dev": {
     "monolog/monolog": "^3.9",
-    "psr/log": "^3.0"
+    "psr/log": "^3.0",
+    "psr/container": "^2.0"
   },
   "suggest": {
     "illuminate/database": "Enable \\Lento\\ORM::configure() and Eloquent ORM support",

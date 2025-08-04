@@ -26,7 +26,7 @@ class ValidationException extends Exception
         $message = Message::ValidationFailed->value,
         array $errors = [],
         int $code = 422,
-        Throwable $previous = null
+        ?Throwable $previous = null
     ) {
         if ($message instanceof Message) {
             $message = $message->value;

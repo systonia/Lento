@@ -33,7 +33,7 @@ class NotFoundException extends Exception implements NotFoundExceptionInterface
      * @param integer $code
      * @param Throwable|null $previous
      */
-    public function __construct(string $message = null, int $code = 404, Throwable $previous = null)
+    public function __construct(?string $message = null, int $code = 404, ?Throwable $previous = null)
     {
         if ($message === null) {
             $message = $this->message;

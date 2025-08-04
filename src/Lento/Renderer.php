@@ -2,8 +2,6 @@
 
 namespace Lento;
 
-use RuntimeException;
-
 /**
  * Undocumented class
  */

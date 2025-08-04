@@ -92,6 +92,7 @@ final class Env
             return $result = 'development';
         }
 
+        // @codeCoverageIgnoreStart
         if (!empty($_SERVER['SERVER_NAME']) && str_contains($_SERVER['SERVER_NAME'], 'localhost')) {
             return $result = 'development';
         }
@@ -101,6 +102,7 @@ final class Env
         }
 
         return $result = 'production';
+        // @codeCoverageIgnoreEnd
     }
 
     /**
