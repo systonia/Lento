@@ -1,0 +1,39 @@
+{
+  "name": "systonia/lento",
+  "description": "A lightweight modular API framework for PHP, bundling routing, middleware, CORS, logging, and Eloquent ORM.",
+  "keywords": [
+    "php",
+    "api",
+    "framework",
+    "microframework",
+    "psr-3",
+    "psr-4",
+    "eloquent"
+  ],
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Lento Leisenfeld",
+      "email": "lento@leisenfeld.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Lento\\": "src/Lento/"
+    }
+  },
+  "require": {
+    "php": ">=8.4"
+  },
+  "require-dev": {
+    "monolog/monolog": "^3.9",
+    "psr/log": "^3.0"
+  },
+  "suggest": {
+    "illuminate/database": "Enable \\Lento\\ORM::configure() and Eloquent ORM support",
+    "monolog/monolog": "Powerful logging with handlers, channels, and JSON output (used for \\Lento\\Logger::setLogger())."
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}
