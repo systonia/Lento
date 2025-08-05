@@ -3,12 +3,9 @@
 namespace Lento\OpenAPI;
 
 use RuntimeException;
-use Lento\Http\Attributes\Get;
-use Lento\Formatter\Attributes\FileFormatter;
-use Lento\Routing\Attributes\{Inject, Controller};
+use Lento\Attributes\{Get, FileFormatter, Inject, Controller, Ignore};
 use Lento\OpenAPI\OpenAPIGenerator;
-use Lento\OpenAPI\Attributes\Ignore;
-use Lento\Routing\Router;
+use Lento\Router;
 use Lento\Exceptions\NotFoundException;
 
 /**

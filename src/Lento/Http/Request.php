@@ -129,7 +129,7 @@ class Request
      * @param mixed $default
      * @return mixed
      */
-    public function body(string $key = null, $default = null): mixed
+    public function body(?string $key = null, $default = null): mixed
     {
         if ($key === null) {
             return $this->body;

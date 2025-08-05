@@ -89,8 +89,5 @@ class Response
 
         // Output the body
         echo $this->body;
-
-        // Terminate to prevent further output
-        exit;
     }
 }

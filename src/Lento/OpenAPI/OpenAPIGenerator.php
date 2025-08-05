@@ -2,9 +2,7 @@
 
 namespace Lento\OpenAPI;
 
-use Lento\Routing\Router;
-use Lento\Cache;
-use Lento\Logging\Logger;
+use Lento\{Router, FileSystem, Logger};
 
 /**
  * OpenAPI Generator (cache-driven, zero-reflection hot path)
@@ -22,7 +20,7 @@ class OpenAPIGenerator
     public function __construct(Router $router)
     {
         $this->router = $router;
-        $this->attributeCache = Cache::loadAttributes();
+        $this->attributeCache = FileSystem::loadAttributes();
 
         if (empty($this->components['securitySchemes'])) {
             $this->components['securitySchemes'] = new \stdClass();

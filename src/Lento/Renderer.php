@@ -2,6 +2,8 @@
 
 namespace Lento;
 
+use Lento\Models\RendererOptions;
+
 /**
  * Undocumented class
  */
