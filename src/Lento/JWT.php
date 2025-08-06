@@ -32,7 +32,7 @@ class JWT
      *
      * @return JWTOptions
      */
-    public static function options(): JWTOptions
+    public static function getOptions(): JWTOptions
     {
         if (!isset(self::$options)) {
             self::$options = new JWTOptions();
@@ -50,7 +50,7 @@ class JWT
      */
     public static function encode(array $payload, ?int $ttl = null): string
     {
-        $opts = self::options();
+        $opts = self::getOptions();
         $header = ['alg' => $opts->alg, 'typ' => 'JWT'];
         $payload['exp'] = time() + ($ttl ?? $opts->ttl);
 
@@ -69,7 +69,7 @@ class JWT
      */
     public static function decode(string $jwt): ?array
     {
-        $opts = self::options();
+        $opts = self::getOptions();
         if (substr_count($jwt, '.') !== 2) {
             return null;
         }
@@ -95,7 +95,7 @@ class JWT
      */
     public static function fromRequestHeaders(array $headers): ?array
     {
-        $opts = self::options();
+        $opts = self::getOptions();
         $headerName = $opts->header;
         $value = null;
         foreach ($headers as $k => $v) {

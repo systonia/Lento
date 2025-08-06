@@ -76,7 +76,7 @@ final class FileSystem
      * @param string $directory
      * @return string
      */
-    private static function buildPath(string $directory): string {
+    public static function buildPath(string $directory): string {
         $cleanDirectory = rtrim($directory, '/\\');
         if (self::isAbsolutePath($cleanDirectory)) {
             return rtrim($cleanDirectory, '/\\');

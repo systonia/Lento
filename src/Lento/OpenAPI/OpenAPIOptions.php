@@ -39,7 +39,7 @@ class OpenAPIOptions
     /**
      * Undocumented variable
      *
-     * @var array
+     * @var array<string, string>
      */
     public array $tags = [];
 

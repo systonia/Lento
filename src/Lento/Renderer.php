@@ -2,6 +2,7 @@
 
 namespace Lento;
 
+use Lento\FileSystem;
 use Lento\Models\RendererOptions;
 
 /**
@@ -27,7 +28,7 @@ final class Renderer
             ? $options
             : new RendererOptions($options);
 
-        self::$options->directory = dirname(realpath($_SERVER['SCRIPT_FILENAME'])) . '/' . rtrim(self::$options->directory, '/\\');
+        self::$options->directory = FileSystem::buildPath(self::$options->directory);// dirname(realpath($_SERVER['SCRIPT_FILENAME'])) . '/' . rtrim(self::$options->directory, '/\\');
 
     }
 }

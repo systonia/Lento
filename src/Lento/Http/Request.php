@@ -86,15 +86,6 @@ class Request
                 $req->headers[$name] = $value;
             }
         }
-        // "Authorization" fallback
-        if (isset($_SERVER['AUTHORIZATION'])) {
-            $req->headers['Authorization'] = $_SERVER['AUTHORIZATION'];
-        }
-        $headersLower = array_change_key_case($req->headers, CASE_LOWER);
-        $req->acceptPartial = (
-            isset($headersLower['x-lento-accept']) &&
-            strtolower($headersLower['x-lento-accept']) === 'partial'
-        );
 
         $req->query = $_GET;
 

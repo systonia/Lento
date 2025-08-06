@@ -2,7 +2,11 @@
 
 namespace Lento\OpenAPI;
 
-use Lento\{Router, FileSystem, Logger};
+use RuntimeException;
+use Deprecated;
+
+use Lento\{Router, FileSystem, Logger, OpenAPI};
+use Lento\Attributes\{Ignore, Throws, Summary, Tags, Param};
 
 /**
  * OpenAPI Generator (cache-driven, zero-reflection hot path)
@@ -29,11 +33,11 @@ class OpenAPIGenerator
 
     public function generate(): array
     {
-        $options = \Lento\OpenAPI::getOptions();
+        $options = OpenAPI::getOptions();
 
         return array_filter([
             'openapi' => '3.1.0',
-            'info' => \Lento\OpenAPI::getInfo(),
+            'info' => OpenAPI::getInfo(),
             'paths' => $this->buildPaths(),
             'components' => $this->components,
             'security' => $options->security ?: null,
@@ -108,8 +112,7 @@ class OpenAPIGenerator
     protected function isIgnored(array $classAttrs, array $methodAttrs): bool
     {
         foreach (array_merge($classAttrs, $methodAttrs) as $attr) {
-            if (($attr['name'] ?? null) === \Lento\OpenAPI\Attributes\Ignore::class) {
-                Logger::info("ignored");
+            if (($attr['name'] ?? null) === Ignore::class) {
                 return true;
             }
         }
@@ -132,7 +135,7 @@ class OpenAPIGenerator
 
         // Throws: error responses
         foreach ($methodAttrs as $attr) {
-            if (($attr['name'] ?? null) === \Lento\OpenAPI\Attributes\Throws::class) {
+            if (($attr['name'] ?? null) === Throws::class) {
                 $throws = $attr['args'] ?? [];
                 $statusCode = isset($throws['status']) ? (string) $throws['status'] : '500';
                 $desc = $throws['description'] ?? $throws['exception'] ?? "Error";
@@ -196,7 +199,7 @@ class OpenAPIGenerator
             $type = null;
             $hasParamAttr = false;
             foreach ($paramAttrs as $attr) {
-                if ($attr['name'] === \Lento\Routing\Attributes\Param::class) {
+                if ($attr['name'] === Param::class) {
                     $hasParamAttr = true;
                 }
                 // Try to extract type from attribute args (if provided by your cache builder)
@@ -248,7 +251,7 @@ class OpenAPIGenerator
     protected function generateModelSchema(string $fqcn): array
     {
         if (!$fqcn || !class_exists($fqcn)) {
-            throw new \RuntimeException("OpenAPIGenerator: Class $fqcn does not exist");
+            throw new RuntimeException("OpenAPIGenerator: Class $fqcn does not exist");
         }
 
         $rc = new \ReflectionClass($fqcn);
@@ -289,7 +292,7 @@ class OpenAPIGenerator
     protected function extractTags(array $attrs): array
     {
         foreach ($attrs as $attr) {
-            if (($attr['name'] ?? null) === \Lento\OpenAPI\Attributes\Tags::class) {
+            if (($attr['name'] ?? null) === Tags::class) {
                 // Positional
                 if (isset($attr['args'][0])) {
                     return (array) $attr['args'][0];
@@ -306,7 +309,7 @@ class OpenAPIGenerator
     protected function extractSummary(array $methodAttrs, string $controllerClass, string $methodName): string
     {
         foreach ($methodAttrs as $attr) {
-            if (($attr['name'] ?? null) === \Lento\OpenAPI\Attributes\Summary::class) {
+            if (($attr['name'] ?? null) === Summary::class) {
                 // Positional
                 if (isset($attr['args'][0]))
                     return $attr['args'][0];
@@ -322,7 +325,7 @@ class OpenAPIGenerator
     protected function isDeprecated(array $methodAttrs): bool
     {
         foreach ($methodAttrs as $attr) {
-            if (($attr['name'] ?? null) === \Deprecated::class) {
+            if (($attr['name'] ?? null) === Deprecated::class) {
                 return true;
             }
         }
