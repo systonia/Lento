@@ -2,46 +2,104 @@
 
 namespace Lento;
 
-/**
- * Undocumented class
- */
 final class Env
 {
     /**
-     * Undocumented function
+     * All env keys/values managed by this class.
      *
-     * @param [type] $dir
-     * @return void
+     * @var array
      */
-    public static function load(string $dir = __DIR__): void
+    private static array $data = [];
+
+    /**
+     * Clears the Env to initial empty state.
+     */
+    public static function clear(): void
     {
-        $basePath = rtrim($dir, '/\\');
-
-        // 1. Load base env
-        self::parseFile("$basePath/.env");
-
-        // 2. Detect environment
-        $env = $_ENV['APP_ENV']
-            ?? $_SERVER['APP_ENV']
-            ?? self::detectEnvironment();
-
-        $_ENV['APP_ENV'] = $_SERVER['APP_ENV'] = $env;
-
-        // 3. Load env-specific file
-        $envFile = "$basePath/.env.$env";
-        if (is_file($envFile)) {
-            self::parseFile($envFile);
-        }
+        self::$data = [];
     }
 
     /**
-     * Undocumented function
-     *
-     * @param string $file
-     * @return void
+     * Loads environment variables from system, then extends with server, .env files.
+     * Does not mutate any global state.
      */
-    private static function parseFile(string $file): void
+    public static function load(string $dir = __DIR__): void
     {
+        self::$data = [];
+
+        // 1. Load from system env vars
+        foreach (self::readSystemEnv() as $key => $val) {
+            self::$data[$key] = $val;
+        }
+
+        // 2. Overlay $_ENV
+        foreach ($_ENV as $key => $val) {
+            self::$data[$key] = $val;
+        }
+
+        // 3. Overlay $_SERVER
+        foreach ($_SERVER as $key => $val) {
+            if (is_string($val)) { // Prevents object/array pollution
+                self::$data[$key] = $val;
+            }
+        }
+
+        // 4. Overlay base .env file
+        $basePath = rtrim($dir, '/\\');
+        self::extendWithEnvFile("$basePath/.env");
+
+        // 5. Detect environment (from merged so far, or detect)
+        $env = self::$data['APP_ENV'] ?? self::detectEnvironment();
+        self::$data['APP_ENV'] = $env;
+
+        // 6. Overlay .env.$env file
+        self::extendWithEnvFile("$basePath/.env.$env");
+    }
+
+    /**
+     * Adds/overrides a variable in Env storage only.
+     */
+    public static function set(string $key, string $value): void
+    {
+        self::$data[$key] = $value;
+    }
+
+    /**
+     * Get variable from Env storage, or default if not present.
+     */
+    public static function get(string $key, mixed $default = null): mixed
+    {
+        return self::$data[$key] ?? $default;
+    }
+
+    /**
+     * Checks if the current environment is "development".
+     */
+    public static function isDev(): bool
+    {
+        return (self::$data['APP_ENV'] ?? 'production') === 'development';
+    }
+
+    // --- Private helpers ---
+
+    /**
+     * Returns getenv() as an array (if available).
+     */
+    private static function readSystemEnv(): array
+    {
+        $env = getenv();
+        return is_array($env) ? $env : [];
+    }
+
+    /**
+     * Parse and extend Env with a given .env file (does not overwrite existing keys unless force).
+     */
+    private static function extendWithEnvFile(string $file): void
+    {
+        if (!is_file($file)) {
+            return;
+        }
+
         $handle = @fopen($file, 'r');
         if (!$handle) {
             return;
@@ -61,69 +119,34 @@ final class Env
             $key = trim(substr($line, 0, $equals));
             $val = trim(substr($line, $equals + 1), " \t\n\r\0\x0B\"'");
 
-            if (!isset($_ENV[$key])) {
-                $_ENV[$key] = $val;
-            }
-            if (!isset($_SERVER[$key])) {
-                $_SERVER[$key] = $val;
-            }
-            if (getenv($key) === false) {
-                putenv("$key=$val");
-            }
+            self::$data[$key] = $val;
         }
 
         fclose($handle);
     }
 
     /**
-     * Undocumented function
+     * Determines current environment as a fallback.
      *
      * @return string
      */
     private static function detectEnvironment(): string
     {
         static $result;
-
         if ($result !== null) {
             return $result;
         }
-
         if (php_sapi_name() === 'cli' || php_sapi_name() === 'cli-server') {
             return $result = 'development';
         }
-
         // @codeCoverageIgnoreStart
         if (!empty($_SERVER['SERVER_NAME']) && str_contains($_SERVER['SERVER_NAME'], 'localhost')) {
             return $result = 'development';
         }
-
         if (extension_loaded('xdebug')) {
             return $result = 'development';
         }
-
         return $result = 'production';
         // @codeCoverageIgnoreEnd
-    }
-
-    /**
-     * Undocumented function
-     *
-     * @return boolean
-     */
-    public static function isDev(): bool
-    {
-        return ($_ENV['APP_ENV'] ?? $_SERVER['APP_ENV'] ?? 'production') === 'development';
-    }
-
-    /**
-     * Undocumented function
-     *
-     * @param string $key
-     * @param mixed $default
-     * @return mixed
-     */
-    public static function get(string $key, mixed $default = null): mixed
-    {
-        return $_ENV[$key] ?? $_SERVER[$key] ?? $default;
     }
 }

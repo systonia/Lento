@@ -157,7 +157,7 @@ class App
         return $all;
     }
 
-    public static function get(string $class): T|null
+    public static function get(string $class): mixed
     {
         try {
             return self::$container->get($class);
