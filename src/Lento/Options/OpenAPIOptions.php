@@ -1,6 +1,6 @@
 <?php
 
-namespace Lento\OpenAPI;
+namespace Lento\Options;
 
 /**
  * Undocumented class

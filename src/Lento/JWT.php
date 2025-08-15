@@ -2,45 +2,13 @@
 
 namespace Lento;
 
-use Lento\Models\JWTOptions;
+use Lento\Options\JWTOptions;
 
 /**
  * Undocumented class
  */
 class JWT
 {
-    /**
-     * Undocumented variable
-     *
-     * @var JWTOptions
-     */
-    private static JWTOptions $options;
-
-    /**
-     * Undocumented function
-     *
-     * @param array|JWTOptions $opts
-     * @return void
-     */
-    public static function configure(array|JWTOptions $opts): void
-    {
-        self::$options = $opts instanceof JWTOptions ? $opts : new JWTOptions($opts);
-    }
-
-    /**
-     * Undocumented function
-     *
-     * @return JWTOptions
-     */
-    public static function getOptions(): JWTOptions
-    {
-        if (!isset(self::$options)) {
-            self::$options = new JWTOptions();
-        }
-
-        return self::$options;
-    }
-
     /**
      * Undocumented function
      *
@@ -50,7 +18,7 @@ class JWT
      */
     public static function encode(array $payload, ?int $ttl = null): string
     {
-        $opts = self::getOptions();
+        $opts = App::getContainer()->get(JWTOptions::class);
         $header = ['alg' => $opts->alg, 'typ' => 'JWT'];
         $payload['exp'] = time() + ($ttl ?? $opts->ttl);
 
@@ -69,7 +37,7 @@ class JWT
      */
     public static function decode(string $jwt): ?array
     {
-        $opts = self::getOptions();
+        $opts = App::getContainer()->get(JWTOptions::class);
         if (substr_count($jwt, '.') !== 2) {
             return null;
         }
@@ -95,7 +63,7 @@ class JWT
      */
     public static function fromRequestHeaders(array $headers): ?array
     {
-        $opts = self::getOptions();
+        $opts = App::getContainer()->get(JWTOptions::class);
         $headerName = $opts->header;
         $value = null;
         foreach ($headers as $k => $v) {

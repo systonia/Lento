@@ -1,6 +1,6 @@
 <?php
 
-namespace Lento\Models;
+namespace Lento\Options;
 
 /**
  * Undocumented class
@@ -41,18 +41,4 @@ class JWTOptions
      * @var string
      */
     public string $header = 'Authorization';
-
-    /**
-     * Undocumented function
-     *
-     * @param array $opts
-     */
-    public function __construct(array $opts = [])
-    {
-        foreach ($opts as $k => $v) {
-            if (property_exists($this, $k)) {
-                $this->$k = $v;
-            }
-        }
-    }
 }

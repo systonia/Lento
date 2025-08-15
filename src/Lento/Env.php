@@ -69,6 +69,10 @@ final class Env
      */
     public static function get(string $key, mixed $default = null): mixed
     {
+        if (count(self::$data) === 0) {
+            self::load();
+        }
+
         return self::$data[$key] ?? $default;
     }
 

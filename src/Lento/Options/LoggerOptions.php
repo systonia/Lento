@@ -1,6 +1,6 @@
 <?php
 
-namespace Lento\Models;
+namespace Lento\Options;
 
 /**
  * Undocumented class

@@ -4,6 +4,9 @@ namespace Lento;
 
 use Throwable;
 use ReflectionClass;
+use ReflectionFunction;
+use ReflectionNamedType;
+use InvalidArgumentException;
 
 use Lento\Router;
 use Lento\Attributes\Inject;
@@ -19,11 +22,17 @@ class App
     /**
      * @param array<class-string> $controllers
      */
-    public static function create(array $controllers): void
+    public static function create(): void
     {
-        if (OpenAPI::isEnabled()) {
+        Env::load();
+        self::$container = new Container();
+    }
+
+    public static function attach(array $controllers): void
+    {
+        /*if (OpenAPI::isEnabled()) {
             $controllers[] = OpenAPIController::class;
-        }
+        }*/
 
         $allClasses = self::discoverAllClasses($controllers);
         self::initDependencyInjection($allClasses);
@@ -108,7 +117,6 @@ class App
 
     private static function initDependencyInjection(array $classes): void
     {
-        self::$container = new Container();
         foreach ($classes as $cls) {
             if (!class_exists($cls))
                 continue;
@@ -169,5 +177,29 @@ class App
     public static function getRouter(): Router
     {
         return self::$router;
+    }
+    public static function getContainer(): Container
+    {
+        return self::$container;
+    }
+
+    public static function configure(callable $config): void
+    {
+        $reflection = new ReflectionFunction($config);
+        $args = [];
+
+        foreach ($reflection->getParameters() as $param) {
+            $type = $param->getType();
+
+            if (!$type instanceof ReflectionNamedType || $type->isBuiltin()) {
+                throw new InvalidArgumentException(
+                    "Closure parameters must be type-hinted with a non-builtin Options class"
+                );
+            }
+
+            $args[] = self::$container->get($type->getName());
+        }
+
+        $config(...$args);
     }
 }
