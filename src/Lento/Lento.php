@@ -2,6 +2,8 @@
 
 namespace Lento;
 
+use Stringable;
+
 class Lento {
 
     /**
@@ -43,5 +45,10 @@ class Lento {
     public static function getContainer(): Container
     {
         return self::$instance->getContainer();
+    }
+
+    public static function getConfig(string $className): mixed
+    {
+        return self::getContainer()->get($className);
     }
 }

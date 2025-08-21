@@ -133,7 +133,7 @@ class View
     public function render()
     {
         $model = $this->model;
-        $viewFile = Lento::getContainer()->get(RendererOptions::class)->directory . "/{$this->view}.php";
+        $viewFile = Lento::getConfig(RendererOptions::class)->directory . "/{$this->view}.php";
         if (!file_exists($viewFile)) {
             throw new RuntimeException("View '{$viewFile}' not found.");
         }
@@ -144,9 +144,9 @@ class View
         $content = ob_get_clean();
 
         if ($this->layout !== null) {
-            $layoutFile = Lento::getContainer()->get(RendererOptions::class)->directory . '/' . $this->layout;
+            $layoutFile = Lento::getConfig(RendererOptions::class)->directory . '/' . $this->layout;
         } else {
-            $layoutFile = Lento::getContainer()->get(RendererOptions::class)->directory . '/' . Lento::getContainer()->get(RendererOptions::class)->layout;
+            $layoutFile = Lento::getConfig(RendererOptions::class)->directory . '/' . Lento::getConfig(RendererOptions::class)->layout;
         }
 
         if (!$this->partial && file_exists($layoutFile)) {

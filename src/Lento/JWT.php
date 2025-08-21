@@ -18,7 +18,7 @@ class JWT
      */
     public static function encode(array $payload, ?int $ttl = null): string
     {
-        $opts = Lento::getContainer()->get(JWTOptions::class);
+        $opts = Lento::getConfig(JWTOptions::class);
         $header = ['alg' => $opts->alg, 'typ' => 'JWT'];
         $payload['exp'] = time() + ($ttl ?? $opts->ttl);
 
@@ -37,7 +37,7 @@ class JWT
      */
     public static function decode(string $jwt): ?array
     {
-        $opts = Lento::getContainer()->get(JWTOptions::class);
+        $opts = Lento::getConfig(JWTOptions::class);
         if (substr_count($jwt, '.') !== 2) {
             return null;
         }
@@ -63,7 +63,7 @@ class JWT
      */
     public static function fromRequestHeaders(array $headers): ?array
     {
-        $opts = Lento::getContainer()->get(JWTOptions::class);
+        $opts = Lento::getConfig(JWTOptions::class);
         $headerName = $opts->header;
         $value = null;
         foreach ($headers as $k => $v) {
