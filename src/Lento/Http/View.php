@@ -2,9 +2,9 @@
 
 namespace Lento\Http;
 
+use Lento\Lento;
+use Lento\Options\RendererOptions;
 use RuntimeException;
-
-use Lento\Renderer;
 
 class View
 {
@@ -70,7 +70,10 @@ class View
         $this->view = $view;
         $this->model = $model;
         $this->partial = $partial;
-        $this->layout = $layout ?: Renderer::$options->layout ?: null;
+
+        if ($layout !== null) {
+            $this->layout = $layout;
+        }
     }
 
     /**
@@ -130,7 +133,7 @@ class View
     public function render()
     {
         $model = $this->model;
-        $viewFile = Renderer::$options->directory . "/{$this->view}.php";
+        $viewFile = Lento::getContainer()->get(RendererOptions::class)->directory . "/{$this->view}.php";
         if (!file_exists($viewFile)) {
             throw new RuntimeException("View '{$viewFile}' not found.");
         }
@@ -140,7 +143,12 @@ class View
         include $viewFile;
         $content = ob_get_clean();
 
-        $layoutFile = Renderer::$options->directory . '/' . $this->layout . '.php';
+        if ($this->layout !== null) {
+            $layoutFile = Lento::getContainer()->get(RendererOptions::class)->directory . '/' . $this->layout;
+        } else {
+            $layoutFile = Lento::getContainer()->get(RendererOptions::class)->directory . '/' . Lento::getContainer()->get(RendererOptions::class)->layout;
+        }
+
         if (!$this->partial && file_exists($layoutFile)) {
             ob_start();
             include $layoutFile;

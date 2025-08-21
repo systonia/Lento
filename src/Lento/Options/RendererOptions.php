@@ -2,6 +2,8 @@
 
 namespace Lento\Options;
 
+use Lento\FileSystem;
+
 /**
  * Undocumented class
  */
@@ -12,14 +14,22 @@ class RendererOptions
      *
      * @var ?string
      */
-    public ?string $directory = null;
+    public ?string $directory = null {
+        get => $this->directory;
+        set(?string $value) => $this->directory = $value !== null
+            ? FileSystem::buildPath($value)
+            : null;
+    }
 
     /**
      * Undocumented variable
      *
      * @var string
      */
-    public string $layout = '_Layout';
+    public string $layout = '_Layout'{
+        get => $this->layout;
+        set(?string $value) => $this->layout = $value;
+    }
 
     /**
      * Undocumented function
@@ -33,6 +43,8 @@ class RendererOptions
                 $this->$key = $value;
             }
         }
+
+        $this->directory = FileSystem::buildPath($this->directory || '');
     }
 
     /**

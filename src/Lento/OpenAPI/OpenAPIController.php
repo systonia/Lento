@@ -23,18 +23,37 @@ class OpenAPIController
     #[Inject]
     protected Router $router;
 
-    const docname = 'documentation';
+    /**
+     * Undocumented function
+     *
+     * @return string
+     */
+    #[Get('swagger.html')]
+    #[FileFormatter(filename: 'swagger.html', mimetype: 'text/html', download: false)]
+    public function swagger(): string
+    {
+        $filename = 'swagger.html';
+        $baseDir = __DIR__;
+        $safeName = basename($filename);
+        $path = "$baseDir/$safeName";
+
+        if (!is_file($path) || !is_readable($path)) {
+            throw new NotFoundException("...");
+        }
+
+        return file_get_contents($path);
+    }
 
     /**
      * Undocumented function
      *
      * @return string
      */
-    #[Get]
-    #[FileFormatter(filename: self::docname . '.html', mimetype: 'text/html', download: false)]
-    public function index(): string
+    #[Get('lentodoc.html')]
+    #[FileFormatter(filename: 'lentodoc.html', mimetype: 'text/html', download: false)]
+    public function lentodoc(): string
     {
-        $filename = 'swagger.html';
+        $filename = 'lentodoc.html';
         $baseDir = __DIR__;
         $safeName = basename($filename);
         $path = "$baseDir/$safeName";
