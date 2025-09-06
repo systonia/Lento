@@ -4,8 +4,10 @@ namespace Lento;
 
 use ReflectionClass;
 use ReflectionProperty;
+use RuntimeException;
+
 use Lento\Container;
-use Lento\Logger;
+use Lento\Enums\RouteType;
 use Lento\Http\Request;
 use Lento\Http\Response;
 use Lento\Http\View;
@@ -13,74 +15,83 @@ use Lento\Validator;
 use Lento\Exceptions\ValidationException;
 use Lento\FileSystem;
 use Lento\Attributes\{
-    Inject, Body, Param, Query, Controller, FileFormatter, JSONFormatter, SimpleXmlFormatter
+    Inject,
+    Body,
+    Param,
+    Query,
+    Controller,
+    FileFormatter,
+    JSONFormatter,
+    SimpleXmlFormatter
 };
 
 class Router
 {
     public array $staticRoutes = [];
     public array $dynamicRoutes = [];
-    private ?Container $container = null;
+    public array $tasks = [];
 
-    // -- Container Setter --
-
-    public function setContainer(Container $container): void
-    {
-        $this->container = $container;
-    }
+    private ?Container $container;
 
     // -- Route Management --
 
-    public function addCompiledRoute(array $plan, bool $dynamic): void
+    public function addCompiledRoute(array $plan, RouteType $type = RouteType::Unset): void
     {
         $httpMethod = $plan['httpMethod'];
-        if ($dynamic) {
-            $this->dynamicRoutes[$httpMethod][] = $plan;
-        } else {
-            $this->staticRoutes[$httpMethod][$plan['path']] = $plan;
-        }
+
+        match ($type) {
+            RouteType::Dynamic => $this->dynamicRoutes[$httpMethod][] = $plan,
+            RouteType::Static => $this->staticRoutes[$httpMethod][$plan['path']] = $plan,
+            RouteType::Task => $this->tasks[$plan['path']] = $plan,
+            RouteType::Unset => throw new RuntimeException('')
+        };
     }
 
-    public function exportCompiledPlans(): array
+    public function exportPlans(): array
     {
         return [
             'staticRoutes' => $this->staticRoutes,
             'dynamicRoutes' => $this->dynamicRoutes,
+            'tasks' => $this->tasks
         ];
     }
 
-    public function importCompiledPlans(array $data): void
+    public function importPlans(array $data): void
     {
         $this->staticRoutes = $data['staticRoutes'] ?? [];
         $this->dynamicRoutes = $data['dynamicRoutes'] ?? [];
+        $this->tasks = $data['tasks'] ?? [];
     }
 
     // -- Public Entry Point: Boot --
 
-    public static function boot(array $controllers, array $serviceClasses = [], ?Container $container = null): self
+    public function __construct(array $controllers, array $serviceClasses = [], ?Container $container = null)
     {
-        $router = new self();
         if ($container) {
-            $router->setContainer($container);
+            $this->container = $container;#$router->setContainer($container);
         }
 
         if (!FileSystem::isAvailable($controllers)) {
             $plans = self::compileRoutePlans($controllers);
             foreach ($plans['staticRoutes'] as $method => $routes) {
                 foreach ($routes as $plan) {
-                    $router->addCompiledRoute($plan, false);
+                    $this->addCompiledRoute($plan, RouteType::Static);
                 }
             }
             foreach ($plans['dynamicRoutes'] as $method => $routes) {
                 foreach ($routes as $plan) {
-                    $router->addCompiledRoute($plan, true);
+                    $this->addCompiledRoute($plan, RouteType::Dynamic);
                 }
             }
-            FileSystem::storeFromRouter($router, $controllers, $serviceClasses);
+            foreach ($plans['tasks'] as $method => $routes) {
+                foreach ($routes as $plan) {
+                    $this->addCompiledRoute($plan, RouteType::Task);
+                }
+            }
+            FileSystem::storeFromRouter($this, $controllers, $serviceClasses);
         } else {
-            FileSystem::loadToRouter($router);
+            FileSystem::loadToRouter($this);
         }
-        return $router;
     }
 
     // -- Main Dispatch Method --
@@ -106,6 +117,8 @@ class Router
         try {
             $args = $this->buildMethodArguments($route['argPlan'], $req, $res, $params);
         } catch (ValidationException $e) {
+            // ToDo resolve to internal controller with base routes?
+            // ToDo maybe have a way to set a custom controller to chime in in this case
             $res->status(400)
                 ->withHeader('Content-Type', 'application/json')
                 ->write(json_encode(['error' => 'Validation failed', 'details' => $e->getErrors()]))
@@ -301,7 +314,7 @@ class Router
     {
         $res->withHeader('Content-Type', 'application/xml');
         $xml = simplexml_load_string('<root/>');
-        $arrayResult = is_array($result) ? $result : (array)$result;
+        $arrayResult = is_array($result) ? $result : (array) $result;
         array_walk_recursive($arrayResult, function ($v, $k) use ($xml) {
             $xml->addChild($k, $v);
         });
@@ -341,7 +354,8 @@ class Router
                         $formatterAttr = $instance;
                     }
                 }
-                if (!$routeAttr) continue;
+                if (!$routeAttr)
+                    continue;
 
                 $methodPath = $routeAttr->getPath() ?: '';
                 $combined = rtrim($prefix, '/') . '/' . ltrim($methodPath, '/');
@@ -423,7 +437,7 @@ class Router
                 }
             }
         }
-        return ['staticRoutes' => $staticRoutes, 'dynamicRoutes' => $dynamicRoutes];
+        return ['staticRoutes' => $staticRoutes, 'dynamicRoutes' => $dynamicRoutes, 'tasks' => []];
     }
 
     public function getRoutes(): array
@@ -431,7 +445,7 @@ class Router
         $routes = [];
         foreach ($this->staticRoutes as $method => $byPath) {
             foreach ($byPath as $path => $plan) {
-                $routes[] = (object)[
+                $routes[] = (object) [
                     'method' => $method,
                     'rawPath' => $path,
                     'handlerSpec' => [$plan['controller'], $plan['method']],
@@ -440,7 +454,7 @@ class Router
         }
         foreach ($this->dynamicRoutes as $method => $plans) {
             foreach ($plans as $plan) {
-                $routes[] = (object)[
+                $routes[] = (object) [
                     'method' => $method,
                     'rawPath' => $plan['path'],
                     'handlerSpec' => [$plan['controller'], $plan['method']],
@@ -454,7 +468,8 @@ class Router
     {
         $result = [];
         foreach ($controllers as $className) {
-            if (!class_exists($className)) continue;
+            if (!class_exists($className))
+                continue;
             $rc = new ReflectionClass($className);
 
             // Class-level

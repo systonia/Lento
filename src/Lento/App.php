@@ -9,7 +9,6 @@ use ReflectionNamedType;
 use InvalidArgumentException;
 
 use Lento\{Router};
-use Lento\OpenAPI\{OpenAPIController, OpenAPIOptions};
 use Lento\Attributes\Inject;
 use Lento\Http\{Request, Response};
 
@@ -25,10 +24,10 @@ class App
 
     public function attach(array $controllers): void
     {
-        $allClasses = self::discoverAllClasses($controllers);
+        $allClasses = $this->discoverAllClasses($controllers);
         $this->initDependencyInjection($allClasses);
 
-        $this->router = Router::boot($controllers, $allClasses, $this->container);
+        $this->router = new Router($controllers, $allClasses, $this->container);
 
         $this->useLentoAcceptHeader();
     }
@@ -129,7 +128,7 @@ class App
         }
     }
 
-    private static function discoverAllClasses(array $controllers): array
+    private function discoverAllClasses(array $controllers): array
     {
         $all = $controllers;
         $queue = $controllers;

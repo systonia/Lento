@@ -2,6 +2,7 @@
 
 namespace Lento\OpenAPI;
 
+use Lento\Lento;
 use RuntimeException;
 use Lento\Attributes\{Get, FileFormatter, Inject, Controller, Ignore};
 use Lento\OpenAPI\OpenAPIGenerator;
@@ -15,13 +16,6 @@ use Lento\Exceptions\NotFoundException;
 #[Controller('/openapi')]
 class OpenAPIController
 {
-    /**
-     * Undocumented variable
-     *
-     * @var Router
-     */
-    #[Inject]
-    protected Router $router;
 
     /**
      * Undocumented function
@@ -74,11 +68,7 @@ class OpenAPIController
     #[FileFormatter(filename: 'spec.json', mimetype: 'application/json', download: false)]
     public function spec(): array
     {
-        if (!$this->router) {
-            throw new RuntimeException("Router not injected");
-        }
-
-        $OpenAPI = new OpenAPIGenerator($this->router);
+        $OpenAPI = new OpenAPIGenerator(Lento::getRouter());
 
         return $OpenAPI->generate();
     }

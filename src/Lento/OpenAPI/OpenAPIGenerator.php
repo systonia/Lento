@@ -33,16 +33,14 @@ class OpenAPIGenerator
 
     public function generate(): array
     {
-        $options = OpenAPI::getOptions();
-
         return array_filter([
             'openapi' => '3.1.0',
-            'info' => OpenAPI::getInfo(),
+            'info' => '',
             'paths' => $this->buildPaths(),
             'components' => $this->components,
-            'security' => $options->security ?: null,
-            'tags' => $options->tags ?: null,
-            'externalDocs' => $options->externalDocs ?: null,
+            'security' => null,
+            'tags' => null,
+            'externalDocs' => null,
         ]);
     }
 

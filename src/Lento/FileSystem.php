@@ -220,7 +220,7 @@ final class FileSystem
         if (!is_dir($dir)) {
             mkdir($dir, 0777, true);
         }
-        $data = $router->exportCompiledPlans();
+        $data = $router->exportPlans();
         $data['services'] = $serviceClasses;
 
         $header = "<?php\n// AUTO-GENERATED FILE - DO NOT EDIT\n\n";
@@ -288,6 +288,6 @@ final class FileSystem
             return;
         }
         $data = require $routeFile;
-        $router->importCompiledPlans($data);
+        $router->importPlans($data);
     }
 }
